@@ -22,7 +22,6 @@ from neutron.plugins.ml2.drivers import type_vlan
 
 from networking_arista._i18n import _LI
 from networking_arista.common import config  # noqa
-from networking_arista.common import db_lib
 from networking_arista.ml2 import arista_ml2
 from networking_arista.ml2.drivers import driver_helpers
 
@@ -42,8 +41,7 @@ class AristaVlanTypeDriver(type_vlan.VlanTypeDriver):
 
     def __init__(self):
         super(AristaVlanTypeDriver, self).__init__()
-        ndb = db_lib.NeutronNets()
-        self.rpc = arista_ml2.AristaRPCWrapperEapi(ndb)
+        self.rpc = arista_ml2.AristaRPCWrapperEapi()
         self.sync_service = driver_helpers.VlanSyncService(self.rpc)
         self.network_vlan_ranges = dict()
         self.sync_timeout = cfg.CONF.arista_type_driver['sync_interval']

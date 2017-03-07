@@ -55,7 +55,7 @@ BAREMETAL_NOT_SUPPORTED = 'EOS version on CVX does not support Baremetal'
 NETWORK_TYPE_FLAT = 'flat'
 
 
-class InstanceType(object):
+class InstanceType:
     BAREMETAL = 'baremetal'
     DHCP = 'dhcp'
     ROUTER = 'router'
@@ -537,7 +537,7 @@ class AristaRPCWrapperJSON(AristaRPCWrapperBase):
             }
             func = func_lookup.get(method)
             if not func:
-                LOG.warning(_LW('Unrecognized HTTP method %s'), method)
+                LOG.warning(_LI('Unrecognized HTTP method %s'), method)
                 return None
 
             resp = func(url, timeout=self.conn_timeout, verify=False,

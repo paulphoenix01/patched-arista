@@ -16,7 +16,6 @@ import copy
 import threading
 
 from neutron_lib import constants as n_const
-from neutron_lib import context as nctx
 from oslo_config import cfg
 from oslo_log import helpers as log_helpers
 from oslo_log import log as logging
@@ -26,10 +25,12 @@ from neutron.api.rpc.agentnotifiers import l3_rpc_agent_api
 from neutron.api.rpc.handlers import l3_rpc
 from neutron.common import rpc as n_rpc
 from neutron.common import topics
+from neutron import context as nctx
 from neutron.db import db_base_plugin_v2
 from neutron.db import extraroute_db
 from neutron.db import l3_agentschedulers_db
 from neutron.db import l3_gwmode_db
+from neutron.plugins.common import constants
 from neutron.plugins.ml2.driver_context import NetworkContext  # noqa
 
 from networking_arista._i18n import _LE, _LI
@@ -74,7 +75,7 @@ class AristaL3ServicePlugin(db_base_plugin_v2.NeutronDbPluginV2,
         self.conn.consume_in_threads()
 
     def get_plugin_type(self):
-        return n_const.L3
+        return constants.L3_ROUTER_NAT
 
     def get_plugin_description(self):
         """Returns string description of the plugin."""

@@ -496,7 +496,7 @@ class AristaDriver(driver_api.MechanismDriver):
                         # If segment id is not bound to any port, then
                         # remove it from EOS
                         segment = self.ndb.get_segment_by_id(
-                            context._plugin_context,
+                            context._plugin_context.session,
                             binding_level.segment_id)
                         if not segment:
                             try:
@@ -694,7 +694,7 @@ class AristaDriver(driver_api.MechanismDriver):
                         if bound_segment:
                             segments.append(bound_segment)
                     all_segments = self.ndb.get_all_network_segments(
-                        network_id, context=context._plugin_context)
+                        network_id, session=context._plugin_context.session)
                     try:
                         self.rpc.create_network_segments(
                             tenant_id, network_id,
@@ -851,7 +851,7 @@ class AristaDriver(driver_api.MechanismDriver):
             if self._network_provisioned(tenant_id, network_id,
                                          segment_id=binding_level.segment_id):
                 segment = self.ndb.get_segment_by_id(
-                    context._plugin_context, binding_level.segment_id)
+                    context._plugin_context.session, binding_level.segment_id)
                 if not segment:
                     # The segment is already released. Delete it from EOS
                     LOG.debug("Deleting segment %s", binding_level.segment_id)
@@ -911,7 +911,8 @@ class AristaDriver(driver_api.MechanismDriver):
         # second last driver in the bound drivers list.
         if (segment_id and bound_drivers[-2:-1] == [MECHANISM_DRV_NAME]):
             filters = {'segment_id': segment_id}
-            result = db_lib.get_port_binding_level(filters)
+            result = db_lib.get_port_binding_level(
+                context._plugin_context.session, filters)
             LOG.debug("Looking for entry with filters=%(filters)s "
                       "result=%(result)s ", {'filters': filters,
                                              'result': result})

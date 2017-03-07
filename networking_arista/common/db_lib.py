@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from neutron_lib import context as nctx
-
+from neutron import context as nctx
 import neutron.db.api as db
 from neutron.db import db_base_plugin_v2
 from neutron.db import securitygroups_db as sec_db
@@ -437,9 +436,8 @@ def get_all_baremetal_ports():
                 for bm_port in bm_ports}
 
 
-def get_port_binding_level(filters):
+def get_port_binding_level(session, filters):
     """Returns entries from PortBindingLevel based on the specified filters."""
-    session = db.get_session()
     with session.begin():
         return (session.query(ml2_models.PortBindingLevel).
                 filter_by(**filters).all())
@@ -482,7 +480,7 @@ class NeutronNets(db_base_plugin_v2.NeutronDbPluginV2,
     def get_shared_network_owner_id(self, network_id):
         filters = {'id': [network_id]}
         nets = self.get_networks(self.admin_ctx, filters=filters) or []
-        segments = segments_db.get_network_segments(self.admin_ctx,
+        segments = segments_db.get_network_segments(self.admin_ctx.session,
                                                     network_id)
         if not nets or not segments:
             return
@@ -490,23 +488,23 @@ class NeutronNets(db_base_plugin_v2.NeutronDbPluginV2,
            segments[0][driver_api.NETWORK_TYPE] == p_const.TYPE_VLAN):
             return nets[0]['tenant_id']
 
-    def get_network_segments(self, network_id, dynamic=False, context=None):
-        context = context if context is not None else self.admin_ctx
-        segments = segments_db.get_network_segments(context, network_id,
+    def get_network_segments(self, network_id, dynamic=False, session=None):
+        db_session = session if session else self.admin_ctx.session
+        segments = segments_db.get_network_segments(db_session, network_id,
                                                     filter_dynamic=dynamic)
         if dynamic:
             for segment in segments:
                 segment['is_dynamic'] = True
         return segments
 
-    def get_all_network_segments(self, network_id, context=None):
-        segments = self.get_network_segments(network_id, context=context)
+    def get_all_network_segments(self, network_id, session=None):
+        segments = self.get_network_segments(network_id, session=session)
         segments += self.get_network_segments(network_id, dynamic=True,
-                                              context=context)
+                                              session=session)
         return segments
 
-    def get_segment_by_id(self, context, segment_id):
-        return segments_db.get_segment_by_id(context,
+    def get_segment_by_id(self, session, segment_id):
+        return segments_db.get_segment_by_id(session,
                                              segment_id)
 
     def get_network_from_net_id(self, network_id, context=None):

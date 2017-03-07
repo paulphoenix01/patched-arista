@@ -17,7 +17,7 @@ from oslo_log import log
 from six import moves
 
 from neutron.db import api as db_api
-from neutron.db.models.plugins.ml2 import vlanallocation
+from neutron.plugins.ml2.drivers import type_vlan
 
 from networking_arista._i18n import _LI
 from networking_arista.common import exceptions as arista_exc
@@ -120,9 +120,8 @@ class VlanSyncService(object):
 
         session = db_api.get_session()
         with session.begin(subtransactions=True):
-            allocs = (
-                session.query(vlanallocation.VlanAllocation).with_lockmode(
-                    'update'))
+            allocs = (session.query(type_vlan.VlanAllocation).with_lockmode(
+                'update'))
 
             for alloc in allocs:
                 if alloc.physical_network != 'default':
@@ -141,8 +140,7 @@ class VlanSyncService(object):
 
             for vlan_id in sorted(assigned_vlans):
                 allocated = vlan_id in used_vlans
-                alloc = vlanallocation.VlanAllocation(
-                    physical_network='default',
-                    vlan_id=vlan_id,
-                    allocated=allocated)
+                alloc = type_vlan.VlanAllocation(physical_network='default',
+                                                 vlan_id=vlan_id,
+                                                 allocated=allocated)
                 session.add(alloc)
